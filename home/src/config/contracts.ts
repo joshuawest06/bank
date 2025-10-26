@@ -1,7 +1,7 @@
 import type { Abi } from 'viem';
 
 export const MOCK_USDT_ADDRESS =
-  '0x5FbDB2315678afecb367f032d93F642f64180aa3' as const;
+  '0xbE0a0671eF656F6CBbb390996fD4dE7C9E96b944' as const;
 export const MOCK_USDT_DECIMALS = 6;
 
 export const MOCK_USDT_ABI = [
@@ -720,7 +720,7 @@ export const MOCK_USDT_ABI = [
 ] as const satisfies Abi;
 
 export const FIXED_TERM_BANK_ADDRESS =
-  '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512' as const;
+  '0x7eC62d30e48f2353E17a24eccC029d8FBdA2a6dC' as const;
 
 export const FIXED_TERM_BANK_ABI = [
   {
