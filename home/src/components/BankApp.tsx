@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Contract } from 'ethers';
 import { formatUnits, parseUnits } from 'viem';
 import { useAccount, usePublicClient } from 'wagmi';
-import { createInstance, SepoliaConfig, type FhevmInstance } from '@zama-fhe/relayer-sdk';
 
 import { useEthersSigner } from '../hooks/useEthersSigner';
+import { useZamaInstance } from '../hooks/useZamaInstance';
 import {
   FIXED_TERM_BANK,
   MOCK_USDT,
@@ -37,6 +37,11 @@ export function BankApp() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const signer = useEthersSigner();
+  const {
+    instance: fheInstance,
+    isLoading: isFheInitializing,
+    error: fheError,
+  } = useZamaInstance();
 
   const [balance, setBalance] = useState('--');
   const [mintAmount, setMintAmount] = useState('100');
@@ -51,7 +56,6 @@ export function BankApp() {
   const [isMinting, setIsMinting] = useState(false);
   const [isDepositing, setIsDepositing] = useState(false);
   const [withdrawingId, setWithdrawingId] = useState<bigint | null>(null);
-  const [fheInstance, setFheInstance] = useState<FhevmInstance | null>(null);
   const [decryptionContext, setDecryptionContext] = useState<DecryptionContext | null>(null);
   const [isBalanceDecrypting, setIsBalanceDecrypting] = useState(false);
 
@@ -73,31 +77,6 @@ export function BankApp() {
     setStatusMessage(null);
     setErrorMessage(null);
   };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const setupInstance = async () => {
-      if (fheInstance) {
-        return;
-      }
-
-      try {
-        const instance = await createInstance(SepoliaConfig);
-        if (!cancelled) {
-          setFheInstance(instance);
-        }
-      } catch (err) {
-        console.error('Failed to initialize FHE instance', err);
-      }
-    };
-
-    void setupInstance();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [fheInstance]);
 
   useEffect(() => {
     setDecryptionContext(null);
@@ -163,9 +142,9 @@ export function BankApp() {
 
   const decryptTokenHandle = useCallback(
     async (handle: string): Promise<bigint> => {
-      if (!fheInstance) {
-        throw new Error('FHE instance unavailable');
-      }
+    if (!fheInstance) {
+      throw new Error('FHE instance unavailable');
+    }
 
       const context = await ensureDecryptionContext();
       const normalizedHandle = handle.toLowerCase() as `0x${string}`;
@@ -472,8 +451,14 @@ export function BankApp() {
     if (!isConnected) {
       return 'Connect wallet to view balance';
     }
-    if (!fheInstance) {
+    if (isFheInitializing) {
       return 'Initializing Zama relayer client';
+    }
+    if (fheError) {
+      return 'Failed to initialize Zama relayer';
+    }
+    if (!fheInstance) {
+      return 'Zama relayer unavailable';
     }
     if (isBalanceDecrypting) {
       return 'Decrypting ciphertext...';
