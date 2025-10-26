@@ -377,7 +377,7 @@ export function BankApp() {
 
     try {
       const signerInstance = await ensureSigner();
-      const token = new Contract(MOCK_USDT.address, MOCK_USDT.abi, signerInstance);
+      // const token = new Contract(MOCK_USDT.address, MOCK_USDT.abi, signerInstance);
       const bank = new Contract(FIXED_TERM_BANK.address, FIXED_TERM_BANK.abi, signerInstance);
       const bankAddress = (await bank.getAddress()) as `0x${string}`;
 
